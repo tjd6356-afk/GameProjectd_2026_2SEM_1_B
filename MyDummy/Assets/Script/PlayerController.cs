@@ -2,6 +2,13 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+public enum PlayerState
+{
+    Normal,
+    Pikup,
+
+}
+
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private Animator animator;
@@ -20,7 +27,7 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private float gravity = -20f;
 
-
+    private PlayerState currentState = PlayerState.Normal;
     private CharacterController controller;
 
     private float verticaVelocity;
@@ -43,6 +50,28 @@ public class PlayerController : MonoBehaviour
         Keyboard keyboard = Keyboard.current;
         if (keyboard == null ) { return; }
 
+        ApplyGravity();
+
+        if (currentState != PlayerState.Normal) return;
+
+        HandleMovement(keyboard);
+        
+    }
+
+    public void ChangeState(PlayerState newState)
+    {
+        currentState = newState;
+
+        if (currentState != PlayerState.Normal)
+        {
+            animator.SetFloat("speed", 0);
+
+            Debug.Log("현재 상태 : " + currentState);
+        }
+    }
+
+    private void HandleMovement(Keyboard keyboard)
+    {
         Vector2 input = Vector2.zero;
         if (keyboard.aKey.isPressed)
             input.x -= 1f;
@@ -84,22 +113,13 @@ public class PlayerController : MonoBehaviour
 
         //이동 방향 계산
 
-        if (moveDirection.sqrMagnitude > 0.001f )
+        if (moveDirection.sqrMagnitude > 0.001f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
         }
 
-        if(controller.isGrounded && verticaVelocity < 0f)
-        {
-            verticaVelocity = -2f;
-        }
-        else
-        {
-            verticaVelocity += gravity * Time.deltaTime;
-        }
 
-        controller.Move(Vector3.up * verticaVelocity * Time.deltaTime);
 
 
         // Idle, Walk, Run
@@ -110,6 +130,20 @@ public class PlayerController : MonoBehaviour
             animationSpeed = isRunning ? 1f : 0.5f;
         }
 
-        animator.SetFloat("speed" , animationSpeed , 0.1f, Time.deltaTime);
+        animator.SetFloat("speed", animationSpeed, 0.1f, Time.deltaTime);
+    }
+
+    private void ApplyGravity()
+    {
+        if (controller.isGrounded && verticaVelocity < 0f)
+        {
+            verticaVelocity = -2f;
+        }
+        else
+        {
+            verticaVelocity += gravity * Time.deltaTime;
+        }
+
+        controller.Move(Vector3.up * verticaVelocity * Time.deltaTime);
     }
 }
