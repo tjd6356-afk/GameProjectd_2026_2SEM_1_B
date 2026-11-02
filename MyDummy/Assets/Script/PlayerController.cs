@@ -6,6 +6,7 @@ public enum PlayerState
 {
     Normal,
     Pikup,
+    Ineventory
 
 }
 
@@ -145,5 +146,11 @@ public class PlayerController : MonoBehaviour
         }
 
         controller.Move(Vector3.up * verticaVelocity * Time.deltaTime);
+    }
+
+    public bool isNormalState()
+    {
+        return currentState
+             == PlayerState.Normal;
     }
 }
